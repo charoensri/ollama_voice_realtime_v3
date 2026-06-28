@@ -199,37 +199,59 @@ def calculator(expression: str) -> str:
 #         return f"Web search error: {e}"
     
 
-def web_search(query: str) -> str:
+import requests
+import re
+from ddgs import DDGS
+
+def web_search(query: str):
     try:
-        topic = query.split()[0]
-        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{topic}"
+        output = []
 
-        print(f"[web_search] URL: {url}")
+        with DDGS() as ddgs:
+            for r in ddgs.text(query, max_results=5):
+                output.append({
+                    "title": r.get("title", ""),
+                    "url": r.get("href", ""),
+                    "snippet": r.get("body", "")[:300]
+                })
 
-        r = requests.get(
-            url,
-            timeout=10,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                "Accept": "application/json",
-                "Accept-Language": "en-US,en;q=0.9"
-            }
-        )
-
-        print(f"[web_search] Status: {r.status_code}")
-
-        if r.status_code == 200:
-            data = r.json()
-
-            if "extract" in data:
-                return data["extract"]
-
-            return "No useful summary found."
-
-        return f"Web search failed ({r.status_code})"
+        return {"results": output} if output else {"results": []}
 
     except Exception as e:
-        return f"Web search error: {e}"
+        return {"error": str(e)}
+    
+
+# def web_search(query: str) -> str:
+#     try:
+#         topic = query.split()[0]
+#         url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{topic}"
+
+#         print(f"[web_search] URL: {url}")
+
+#         r = requests.get(
+#             url,
+#             timeout=10,
+#             headers={
+#                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+#                 "Accept": "application/json",
+#                 "Accept-Language": "en-US,en;q=0.9"
+#             }
+#         )
+
+#         print(f"[web_search] Status: {r.status_code}")
+
+#         if r.status_code == 200:
+#             data = r.json()
+
+#             if "extract" in data:
+#                 return data["extract"]
+
+#             return "No useful summary found."
+
+#         return f"Web search failed ({r.status_code})"
+
+#     except Exception as e:
+#         return f"Web search error: {e}"
     
     
 TOOLS = [
