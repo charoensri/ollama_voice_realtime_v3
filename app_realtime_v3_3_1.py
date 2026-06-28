@@ -85,26 +85,153 @@ def calculator(expression: str) -> str:
         return f"Calculation error: {e}"
 
 
+# def web_search(query: str) -> str:
+#     try:
+#         response = requests.get(
+#             "https://duckduckgo.com/html/",
+#             params={"q": query},
+#             timeout=15,
+#             headers={"User-Agent": "Mozilla/5.0"},
+#         )
+#         if response.status_code != 200:
+#             return f"Web search failed with status code {response.status_code}"
+#         html = response.text
+#         html = re.sub(r"(?is)<script.*?>.*?</script>", " ", html)
+#         html = re.sub(r"(?is)<style.*?>.*?</style>", " ", html)
+#         text = re.sub(r"(?s)<.*?>", " ", html)
+#         text = re.sub(r"\s+", " ", text).strip()
+#         return text[:3500]
+#     except Exception as e:
+#         return f"Web search error: {e}"
+
+# def web_search(query: str) -> str:
+#     # ---------- 1. Try DuckDuckGo JSON ----------
+#     try:
+#         r = requests.get(
+#             "https://api.duckduckgo.com/",
+#             params={
+#                 "q": query,
+#                 "format": "json",
+#                 "no_html": 1
+#             },
+#             timeout=10,
+#             headers={"User-Agent": "Mozilla/5.0"}
+#         )
+
+#         if r.status_code == 200:
+#             data = r.json()
+
+#             results = []
+#             if data.get("AbstractText"):
+#                 results.append(data["AbstractText"])
+
+#             if data.get("RelatedTopics"):
+#                 for item in data["RelatedTopics"][:5]:
+#                     if isinstance(item, dict) and item.get("Text"):
+#                         results.append(item["Text"])
+
+#             if results:
+#                 return " ".join(results)[:2000]
+
+#     except Exception as e:
+#         print("[web_search] DDG API failed:", e)
+
+#     # ---------- 2. Fallback: DuckDuckGo HTML ----------
+#     try:
+#         r = requests.get(
+#             "https://duckduckgo.com/html/",
+#             params={"q": query},
+#             timeout=10,
+#             headers={"User-Agent": "Mozilla/5.0"}
+#         )
+
+#         if r.status_code == 200:
+#             text = re.sub(r"(?s)<.*?>", " ", r.text)
+#             text = re.sub(r"\s+", " ", text)
+#             return text[:2000]
+
+#     except Exception as e:
+#         print("[web_search] DDG HTML failed:", e)
+
+#     # ---------- 3. Fallback: Wikipedia ----------
+#     try:
+#         r = requests.get(
+#             "https://en.wikipedia.org/api/rest_v1/page/summary/" + query.replace(" ", "_"),
+#             timeout=10
+#         )
+
+#         if r.status_code == 200:
+#             data = r.json()
+#             if "extract" in data:
+#                 return data["extract"]
+
+#     except Exception as e:
+#         print("[web_search] Wikipedia failed:", e)
+
+#     # ---------- FINAL ----------
+#     return "Web search is currently unavailable due to network restrictions."
+
+
+# def web_search(query: str) -> str:
+#     try:
+        
+#         session = requests.Session()
+#         session.trust_env = True 
+
+#         r = session.get(
+#             "https://duckduckgo.com/html/",
+#             params={"q": query},
+#             timeout=10,
+#             headers={
+#                 "User-Agent": "Mozilla/5.0"
+#             }
+#         )
+
+#         if r.status_code != 200:
+#             return f"Web search failed ({r.status_code})"
+
+#         text = re.sub(r"(?s)<.*?>", " ", r.text)
+#         text = re.sub(r"\s+", " ", text)
+
+#         return text[:2000]
+
+#     except Exception as e:
+#         return f"Web search error: {e}"
+    
+
 def web_search(query: str) -> str:
     try:
-        response = requests.get(
-            "https://duckduckgo.com/html/",
-            params={"q": query},
-            timeout=15,
-            headers={"User-Agent": "Mozilla/5.0"},
+        topic = query.split()[0]
+        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{topic}"
+
+        print(f"[web_search] URL: {url}")
+
+        r = requests.get(
+            url,
+            timeout=10,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "application/json",
+                "Accept-Language": "en-US,en;q=0.9"
+            }
         )
-        if response.status_code != 200:
-            return f"Web search failed with status code {response.status_code}"
-        html = response.text
-        html = re.sub(r"(?is)<script.*?>.*?</script>", " ", html)
-        html = re.sub(r"(?is)<style.*?>.*?</style>", " ", html)
-        text = re.sub(r"(?s)<.*?>", " ", html)
-        text = re.sub(r"\s+", " ", text).strip()
-        return text[:3500]
+
+        print(f"[web_search] Status: {r.status_code}")
+
+        if r.status_code == 200:
+            data = r.json()
+
+            if "extract" in data:
+                return data["extract"]
+
+            return "No useful summary found."
+
+        return f"Web search failed ({r.status_code})"
+
     except Exception as e:
         return f"Web search error: {e}"
-
-
+    
+    
 TOOLS = [
     {
         "type": "function",
