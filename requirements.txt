@@ -1,0 +1,12 @@
+sounddevice
+soundfile
+numpy
+requests
+faster-whisper
+silero-vad
+torch
+onnxruntime
+faiss-cpu
+sentence-transformers
+pypdf
+python-docx

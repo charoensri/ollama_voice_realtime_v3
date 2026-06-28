@@ -1,0 +1,7 @@
+Sample local document for FAISS RAG testing.
+
+ACRES architecture example:
+The system manages aged care regulated entity information, case workflows, document evidence, and regulatory interactions. This is only a sample file. Replace this with your real project documents.
+
+Try asking:
+Hey assistant search my documents for ACRES architecture
